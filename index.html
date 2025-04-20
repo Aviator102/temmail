@@ -2,17 +2,81 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Email Temporário + Conta</title>
+  <title>Gerador de Conta + Email Temporário</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00bcd4;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background-color: #2c2c2c;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 188, 212, 0.2);
+    }
+
+    button {
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 10px 0;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #0097a7;
+    }
+
+    .info, .emails {
+      background-color: #3a3a3a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      background-color: #555;
+      margin: 20px 0;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Gerar Conta com Email Temp</h1>
-  <button onclick="gerarConta()">🎲 Gerar Conta</button>
 
-  <div id="info" style="margin-top:20px;"></div>
-  <div id="emails" style="margin-top:20px;"></div>
+  <h1>📧 Gerador de Conta + Email Temp</h1>
+
+  <div class="container">
+    <button onclick="gerarConta()">🎲 Gerar Nova Conta</button>
+
+    <div id="info" class="info"></div>
+    <div id="emails" class="emails"></div>
+  </div>
 
   <script>
     let token = null;
+    let intervaloEmails = null;
+    let emailsRecebidos = [];
 
     async function gerarConta() {
       const res = await fetch('/gerar_conta');
@@ -24,31 +88,43 @@
       }
 
       token = data.token;
+      emailsRecebidos = [];
+
       document.getElementById('info').innerHTML = `
-        <p><strong>Usuário:</strong> ${data.usuario}</p>
-        <p><strong>Senha:</strong> ${data.senha}</p>
-        <p><strong>Email:</strong> ${data.email}</p>
-        <button onclick="verificarEmails()">📥 Verificar Emails</button>
+        <p><strong>👤 Usuário:</strong> ${data.usuario}</p>
+        <p><strong>🔐 Senha:</strong> ${data.senha}</p>
+        <p><strong>📭 Email:</strong> ${data.email}</p>
+        <p>⏳ Verificando emails automaticamente a cada 10s...</p>
       `;
+
+      verificarEmails();
+      if (intervaloEmails) clearInterval(intervaloEmails);
+      intervaloEmails = setInterval(verificarEmails, 10000);
     }
 
     async function verificarEmails() {
       if (!token) return;
+
       const res = await fetch(`/verificar_emails/${token}`);
       const data = await res.json();
 
       if (data.expired) {
         document.getElementById('emails').innerHTML = "<p>☠️ Caixa de entrada expirada.</p>";
+        clearInterval(intervaloEmails);
         return;
       }
 
-      if (data.emails.length === 0) {
+      if (!data.emails || data.emails.length === 0) {
         document.getElementById('emails').innerHTML = "<p>Nenhum email recebido ainda.</p>";
         return;
       }
 
-      let html = "<h2>📥 Emails:</h2>";
+      let html = "<h2>📥 Emails Recebidos:</h2>";
       data.emails.forEach(email => {
+        if (!emailsRecebidos.includes(email.date)) {
+          emailsRecebidos.push(email.date);
+        }
+
         html += `
           <hr>
           <p><strong>De:</strong> ${email.from}</p>
