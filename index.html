@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gerador de Conta + Email Temp</title>
   <style>
     body {
@@ -15,7 +16,8 @@
     h1 {
       text-align: center;
       color: #00bcd4;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
     }
 
     .container {
@@ -36,7 +38,8 @@
       cursor: pointer;
       border-radius: 4px;
       transition: 0.3s;
-      margin-right: 5px;
+      margin: 5px 5px 5px 0;
+      flex-shrink: 0;
     }
 
     button:hover {
@@ -49,10 +52,12 @@
       border-radius: 8px;
       margin-top: 15px;
       font-size: 15px;
+      overflow-wrap: break-word;
     }
 
     .info p, .emails p {
       margin: 6px 0;
+      line-height: 1.5;
     }
 
     .copy-btn {
@@ -67,6 +72,39 @@
       height: 1px;
       background-color: #555;
       margin: 15px 0;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    @media screen and (max-width: 600px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      button {
+        width: 100%;
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      .btn-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .copy-btn {
+        margin-left: 0;
+        margin-top: 6px;
+      }
     }
   </style>
 </head>
@@ -88,7 +126,6 @@
 
     function copiarTexto(texto) {
       navigator.clipboard.writeText(texto);
-      // Removido o alert
     }
 
     function gerarSenhaAleatoria() {
@@ -111,34 +148,40 @@
       }
 
       token = data.token;
-      emailsRecebidos.clear(); // limpa lista ao gerar nova conta
+      emailsRecebidos.clear();
 
-      const senhaGerada = gerarSenhaAleatoria();  // Gera a senha aleatória inicial
+      const senhaGerada = gerarSenhaAleatoria();
 
       document.getElementById('info').innerHTML = `
-        <p><strong>👤 Usuário:</strong> ${data.usuario}
-          <button class="copy-btn" onclick="copiarTexto('${data.usuario}')">Copiar</button>
-        </p>
-        <p><strong>🔐 Senha:</strong> <span id="senha-display">${senhaGerada}</span>
-          <button class="copy-btn" onclick="copiarTexto('${senhaGerada}')">Copiar</button>
-          <button onclick="alterarSenha()">🔄 Gerar Nova Senha</button>
-        </p>
-        <p><strong>📭 Email:</strong> ${data.email}
-          <button class="copy-btn" onclick="copiarTexto('${data.email}')">Copiar</button>
-        </p>
+        <p><strong>👤 Usuário:</strong> ${data.usuario}</p>
+        <div class="btn-group">
+          <button class="copy-btn" onclick="copiarTexto('${data.usuario}')">Copiar Usuário</button>
+        </div>
+
+        <p><strong>🔐 Senha:</strong> <span id="senha-display">${senhaGerada}</span></p>
+        <div class="btn-group">
+          <button class="copy-btn" onclick="copiarTexto(document.getElementById('senha-display').textContent)">Copiar Senha</button>
+          <button onclick="alterarSenha()">🔄 Nova Senha</button>
+        </div>
+
+        <p><strong>📭 Email:</strong> ${data.email}</p>
+        <div class="btn-group">
+          <button class="copy-btn" onclick="copiarTexto('${data.email}')">Copiar Email</button>
+        </div>
+
         <p>⏳ Verificando emails automaticamente a cada 10s...</p>
       `;
 
       document.getElementById('emails').innerHTML = "";
 
-      verificarEmails(); // verifica imediatamente
+      verificarEmails();
       if (intervaloEmails) clearInterval(intervaloEmails);
       intervaloEmails = setInterval(verificarEmails, 10000);
     }
 
     function alterarSenha() {
-      const novaSenha = gerarSenhaAleatoria();  // Gera uma nova senha aleatória
-      document.getElementById('senha-display').textContent = novaSenha;  // Atualiza a senha exibida
+      const novaSenha = gerarSenhaAleatoria();
+      document.getElementById('senha-display').textContent = novaSenha;
     }
 
     async function verificarEmails() {
@@ -163,8 +206,7 @@
           let corpoMensagem = email.body || "[email has empty or invalid body]";
 
           if (corpoMensagem === "[email has empty or invalid body]" && email.html) {
-            corpoMensagem = "Este e-mail não contém corpo em texto simples, mas possui conteúdo em HTML. Verifique abaixo:";
-            corpoMensagem += `<br><br>${email.html}`;
+            corpoMensagem = "Este e-mail não contém corpo em texto simples, mas possui conteúdo em HTML:<br><br>" + email.html;
           } else if (corpoMensagem === "[email has empty or invalid body]") {
             corpoMensagem = "Este e-mail não contém corpo visível ou está vazio.";
           }
