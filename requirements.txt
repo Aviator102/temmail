@@ -1,3 +1,2 @@
-requests
-beautifulsoup4
-lxml
+Flask==2.2.3
+requests==2.28.1
