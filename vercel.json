@@ -12,16 +12,16 @@
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    },
-    {
       "src": "/gerar_conta",
       "dest": "/app.py"
     },
     {
       "src": "/monitorar_emails/(.*)",
       "dest": "/app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
