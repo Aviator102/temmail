@@ -1,77 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Gerador de Conta + Email Temp</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    .dados, .emails { margin-top: 20px; }
-    button { padding: 10px; margin-top: 10px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Email Temporário + Conta</title>
 </head>
 <body>
-
-  <h1>Gerador de Conta com Email Temp</h1>
-
+  <h1>Gerar Conta com Email Temp</h1>
   <button onclick="gerarConta()">🎲 Gerar Conta</button>
 
-  <div class="dados" id="dados" style="display:none;">
-    <p><b>Usuário:</b> <span id="usuario"></span></p>
-    <p><b>Senha:</b> <span id="senha"></span></p>
-    <p><b>Email:</b> <span id="email"></span></p>
-    <button onclick="verificarEmails()">📥 Verificar Emails</button>
-  </div>
-
-  <div class="emails" id="emails"></div>
+  <div id="info" style="margin-top:20px;"></div>
+  <div id="emails" style="margin-top:20px;"></div>
 
   <script>
-    let tokenGlobal = null;
+    let token = null;
 
     async function gerarConta() {
       const res = await fetch('/gerar_conta');
       const data = await res.json();
-
+      
       if (data.error) {
-        alert(data.error);
+        document.getElementById('info').innerHTML = `<p>❌ ${data.error}</p>`;
         return;
       }
 
-      document.getElementById('usuario').textContent = data.usuario;
-      document.getElementById('senha').textContent = data.senha;
-      document.getElementById('email').textContent = data.email;
-      document.getElementById('dados').style.display = 'block';
-
-      tokenGlobal = data.token;
-      document.getElementById('emails').innerHTML = '';
+      token = data.token;
+      document.getElementById('info').innerHTML = `
+        <p><strong>Usuário:</strong> ${data.usuario}</p>
+        <p><strong>Senha:</strong> ${data.senha}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        <button onclick="verificarEmails()">📥 Verificar Emails</button>
+      `;
     }
 
     async function verificarEmails() {
-      if (!tokenGlobal) return;
-
-      const res = await fetch(`/verificar_emails/${tokenGlobal}`);
+      if (!token) return;
+      const res = await fetch(`/verificar_emails/${token}`);
       const data = await res.json();
 
       if (data.expired) {
-        document.getElementById('emails').innerHTML = "<p>☠️ A caixa expirou.</p>";
+        document.getElementById('emails').innerHTML = "<p>☠️ Caixa de entrada expirada.</p>";
         return;
       }
 
-      if (data.emails && data.emails.length > 0) {
-        let html = "<h3>📥 Emails Recebidos:</h3>";
-        data.emails.forEach(email => {
-          html += `
-            <hr>
-            <p><b>De:</b> ${email.from}</p>
-            <p><b>Assunto:</b> ${email.subject}</p>
-            <p><b>Corpo:</b> ${email.body || "Sem corpo"}</p>
-          `;
-        });
-        document.getElementById('emails').innerHTML = html;
-      } else {
-        document.getElementById('emails').innerHTML = "<p>Nenhum email ainda.</p>";
+      if (data.emails.length === 0) {
+        document.getElementById('emails').innerHTML = "<p>Nenhum email recebido ainda.</p>";
+        return;
       }
+
+      let html = "<h2>📥 Emails:</h2>";
+      data.emails.forEach(email => {
+        html += `
+          <hr>
+          <p><strong>De:</strong> ${email.from}</p>
+          <p><strong>Assunto:</strong> ${email.subject}</p>
+          <p><strong>Mensagem:</strong> ${email.body || 'Sem conteúdo'}</p>
+        `;
+      });
+
+      document.getElementById('emails').innerHTML = html;
     }
   </script>
-
 </body>
 </html>
