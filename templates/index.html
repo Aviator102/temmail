@@ -2,55 +2,40 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Gerador de Conta + Email Temp</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" rel="stylesheet">
-  <style>
-    body {
-      padding-top: 2rem;
-    }
-    .message-box {
-      height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Email + Conta</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <script src="/static/script.js" defer></script>
 </head>
-<body class="section">
-  <div class="container">
-    <h1 class="title is-3">📫 Gerador de Conta + Email Temporário</h1>
+<body>
 
-    <div class="buttons">
-      <button class="button is-link is-medium" onclick="gerarTudo()">🎲 Gerar Conta + Email</button>
-    </div>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Gerador de Conta e Email Temporário</h1>
 
-    <div class="field mt-5">
-      <label class="label">👤 Usuário:</label>
-      <div class="control">
-        <input id="usuario" class="input" readonly>
+      <div class="box">
+        <h3 class="subtitle">Usuário Gerado:</h3>
+        <input id="usuario" class="input" type="text" placeholder="Usuário Gerado" readonly>
+      </div>
+
+      <div class="box">
+        <h3 class="subtitle">Senha Gerada:</h3>
+        <input id="senha" class="input" type="text" placeholder="Senha Gerada" readonly>
+      </div>
+
+      <div class="box">
+        <h3 class="subtitle">Email Temporário:</h3>
+        <input id="email" class="input" type="text" placeholder="Email Temporário" readonly>
+      </div>
+
+      <button class="button is-link" onclick="gerarTudo()">🎲 Gerar Conta + Email</button>
+
+      <div class="box" id="mensagens">
+        <h3 class="subtitle">Mensagens Recebidas:</h3>
+        <p>Sem mensagens ainda.</p>
       </div>
     </div>
+  </section>
 
-    <div class="field">
-      <label class="label">🔒 Senha:</label>
-      <div class="control">
-        <input id="senha" class="input" readonly>
-      </div>
-    </div>
-
-    <div class="field">
-      <label class="label">📧 Email Temporário:</label>
-      <div class="control">
-        <input id="email" class="input" readonly>
-      </div>
-    </div>
-
-    <h2 class="title is-5 mt-5">📥 Mensagens Recebidas</h2>
-    <div id="mensagens" class="box message-box">
-      <em>Aguardando geração de email...</em>
-    </div>
-  </div>
-
-  <script src="/static/script.js"></script>
 </body>
 </html>
