@@ -142,11 +142,20 @@
       data.emails.forEach(email => {
         if (!emailsRecebidos.has(email.date)) {
           emailsRecebidos.add(email.date);
+          let corpoMensagem = email.body || "[email has empty or invalid body]";
+
+          if (corpoMensagem === "[email has empty or invalid body]" && email.html) {
+            corpoMensagem = "Este e-mail não contém corpo em texto simples, mas possui conteúdo em HTML. Verifique abaixo:";
+            corpoMensagem += `<br><br>${email.html}`;
+          } else if (corpoMensagem === "[email has empty or invalid body]") {
+            corpoMensagem = "Este e-mail não contém corpo visível ou está vazio.";
+          }
+
           html += `
             <hr>
             <p><strong>De:</strong> ${email.from}</p>
             <p><strong>Assunto:</strong> ${email.subject}</p>
-            <p><strong>Mensagem:</strong> ${email.body || 'Sem conteúdo'}</p>
+            <p><strong>Mensagem:</strong> ${corpoMensagem}</p>
           `;
         }
       });
