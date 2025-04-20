@@ -34,14 +34,8 @@ def buscar_emails(token):
     url = f"{BASE_URL}/v2/inbox"
     params = {"token": token}
     response = requests.get(url, headers=HEADERS, params=params)
-    
     if response.ok:
-        emails = response.json()
-        # Verifica e modifica os emails com corpo vazio ou inválido
-        for email in emails.get("emails", []):
-            if not email.get("body"):
-                email["body"] = "Este e-mail não contém corpo visível ou está vazio."
-        return emails
+        return response.json()
     return {"error": "Erro ao buscar emails"}
 
 # ==== Rotas ====
@@ -67,4 +61,4 @@ def verificar_emails(token):
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
