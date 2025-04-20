@@ -1,7 +1,7 @@
 let tokenAtual = null;
 
 function gerarTudo() {
-  fetch("/api/gerar") // ← agora é GET, compatível com Vercel
+  fetch("/api/gerar")
     .then(res => res.json())
     .then(data => {
       if (data.erro) {
@@ -16,7 +16,10 @@ function gerarTudo() {
 
       document.getElementById("mensagens").innerHTML = "<em>Monitorando mensagens...</em>";
     })
-    .catch(err => alert("Erro ao chamar API: " + err));
+    .catch(err => {
+      console.error(err);
+      alert("Erro ao chamar API: " + err);
+    });
 }
 
 setInterval(() => {
