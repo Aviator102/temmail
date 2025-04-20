@@ -91,6 +91,16 @@
       // Removido o alert
     }
 
+    function gerarSenhaAleatoria() {
+      const simbolos = '!@#$%^&*+=_-';
+      const caracteres = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' + simbolos;
+      let senha = '';
+      for (let i = 0; i < 12; i++) {
+        senha += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+      }
+      return senha;
+    }
+
     async function gerarConta() {
       const res = await fetch('/gerar_conta');
       const data = await res.json();
@@ -103,12 +113,15 @@
       token = data.token;
       emailsRecebidos.clear(); // limpa lista ao gerar nova conta
 
+      const senhaGerada = gerarSenhaAleatoria();  // Gera a senha aleatória inicial
+
       document.getElementById('info').innerHTML = `
         <p><strong>👤 Usuário:</strong> ${data.usuario}
           <button class="copy-btn" onclick="copiarTexto('${data.usuario}')">Copiar</button>
         </p>
-        <p><strong>🔐 Senha:</strong> ${data.senha}
-          <button class="copy-btn" onclick="copiarTexto('${data.senha}')">Copiar</button>
+        <p><strong>🔐 Senha:</strong> <span id="senha-display">${senhaGerada}</span>
+          <button class="copy-btn" onclick="copiarTexto('${senhaGerada}')">Copiar</button>
+          <button onclick="alterarSenha()">🔄 Gerar Nova Senha</button>
         </p>
         <p><strong>📭 Email:</strong> ${data.email}
           <button class="copy-btn" onclick="copiarTexto('${data.email}')">Copiar</button>
@@ -121,6 +134,11 @@
       verificarEmails(); // verifica imediatamente
       if (intervaloEmails) clearInterval(intervaloEmails);
       intervaloEmails = setInterval(verificarEmails, 10000);
+    }
+
+    function alterarSenha() {
+      const novaSenha = gerarSenhaAleatoria();  // Gera uma nova senha aleatória
+      document.getElementById('senha-display').textContent = novaSenha;  // Atualiza a senha exibida
     }
 
     async function verificarEmails() {
