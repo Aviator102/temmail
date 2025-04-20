@@ -5,12 +5,10 @@ import string
 
 app = Flask(__name__)
 
-# === Configurações ===
 API_KEY_TEMPMail = "Bearer tempmail.20250410.suzjrmjnpg2cs2hos95zurlxuawt970oke9z6pf8qd221qpx"
 BASE_URL = "https://api.tempmail.lol"
 HEADERS = {"Authorization": API_KEY_TEMPMail}
 
-# === Funções auxiliares ===
 def gerar_nome():
     prefixos = ['user', 'admin', 'guest', 'client', 'member']
     sufixo = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
@@ -35,8 +33,6 @@ def buscar_emails(token):
     if response.ok:
         return response.json()
     return {"error": "Erro ao buscar emails"}
-
-# === Rotas ===
 
 @app.route('/gerar_conta', methods=['GET'])
 def gerar_conta():
