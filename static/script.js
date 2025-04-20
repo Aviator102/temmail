@@ -1,15 +1,22 @@
 let tokenAtual = null;
 
 function gerarTudo() {
-  fetch("/api/gerar", { method: "POST" })
+  fetch("/api/gerar") // ← agora é GET, compatível com Vercel
     .then(res => res.json())
     .then(data => {
+      if (data.erro) {
+        alert("Erro ao gerar email: " + data.erro);
+        return;
+      }
+
       document.getElementById("usuario").value = data.usuario;
       document.getElementById("senha").value = data.senha;
       document.getElementById("email").value = data.email;
       tokenAtual = data.token;
+
       document.getElementById("mensagens").innerHTML = "<em>Monitorando mensagens...</em>";
-    });
+    })
+    .catch(err => alert("Erro ao chamar API: " + err));
 }
 
 setInterval(() => {
