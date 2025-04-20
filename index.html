@@ -1,129 +1,77 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Conta + Email Temporário</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 400px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        .result {
-            margin-top: 20px;
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .button:hover {
-            background-color: #218838;
-        }
-        .output {
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Gerador de Conta + Email Temp</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .dados, .emails { margin-top: 20px; }
+    button { padding: 10px; margin-top: 10px; }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Gerar Conta + Email</h1>
+  <h1>Gerador de Conta com Email Temp</h1>
 
-        <button class="button" onclick="gerarConta()">Gerar Conta e Email Temporário</button>
+  <button onclick="gerarConta()">🎲 Gerar Conta</button>
 
-        <div id="resultado" class="result" style="display:none;">
-            <p><strong>Usuário:</strong> <span id="usuario"></span></p>
-            <p><strong>Senha:</strong> <span id="senha"></span></p>
-            <p><strong>Email Temporário:</strong> <span id="email"></span></p>
-        </div>
+  <div class="dados" id="dados" style="display:none;">
+    <p><b>Usuário:</b> <span id="usuario"></span></p>
+    <p><b>Senha:</b> <span id="senha"></span></p>
+    <p><b>Email:</b> <span id="email"></span></p>
+    <button onclick="verificarEmails()">📥 Verificar Emails</button>
+  </div>
 
-        <div id="monitoramento" class="output" style="display:none;">
-            <p><strong>Email Monitorado:</strong></p>
-            <div id="emails"></div>
-        </div>
-    </div>
+  <div class="emails" id="emails"></div>
 
-    <script>
-        async function gerarConta() {
-            try {
-                // Chama a API do Vercel para gerar uma conta e um email temporário
-                const response = await fetch('/gerar_conta');
-                const data = await response.json();
+  <script>
+    let tokenGlobal = null;
 
-                if (data.error) {
-                    alert('Erro ao gerar conta: ' + data.error);
-                    return;
-                }
+    async function gerarConta() {
+      const res = await fetch('/gerar_conta');
+      const data = await res.json();
 
-                // Atualiza os campos com os dados gerados
-                document.getElementById('usuario').textContent = data.usuario;
-                document.getElementById('senha').textContent = data.senha;
-                document.getElementById('email').textContent = data.email;
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
 
-                // Exibe os resultados
-                document.getElementById('resultado').style.display = 'block';
+      document.getElementById('usuario').textContent = data.usuario;
+      document.getElementById('senha').textContent = data.senha;
+      document.getElementById('email').textContent = data.email;
+      document.getElementById('dados').style.display = 'block';
 
-                // Inicia o monitoramento de e-mails
-                monitorarEmails(data.email);
-            } catch (error) {
-                alert('Erro ao se comunicar com a API.');
-                console.error(error);
-            }
-        }
+      tokenGlobal = data.token;
+      document.getElementById('emails').innerHTML = '';
+    }
 
-        async function monitorarEmails(email) {
-            try {
-                const token = email.split('@')[0]; // Obtém um "token" simples do email temporário (ajuste conforme necessário)
-                document.getElementById('monitoramento').style.display = 'block';
+    async function verificarEmails() {
+      if (!tokenGlobal) return;
 
-                while (true) {
-                    const response = await fetch(`/monitorar_emails/${token}`);
-                    const data = await response.json();
+      const res = await fetch(`/verificar_emails/${tokenGlobal}`);
+      const data = await res.json();
 
-                    if (data.message || data.de) {
-                        let emailDetails = `<p><strong>De:</strong> ${data.de}</p>`;
-                        emailDetails += `<p><strong>Assunto:</strong> ${data.assunto}</p>`;
-                        emailDetails += `<p><strong>Corpo:</strong><br>${data.corpo}</p>`;
+      if (data.expired) {
+        document.getElementById('emails').innerHTML = "<p>☠️ A caixa expirou.</p>";
+        return;
+      }
 
-                        document.getElementById('emails').innerHTML = emailDetails;
-                    }
-                    // Espera um pouco antes de verificar novamente
-                    await new Promise(resolve => setTimeout(resolve, 5000)); 
-                }
-            } catch (error) {
-                console.error('Erro ao monitorar os emails:', error);
-            }
-        }
-    </script>
+      if (data.emails && data.emails.length > 0) {
+        let html = "<h3>📥 Emails Recebidos:</h3>";
+        data.emails.forEach(email => {
+          html += `
+            <hr>
+            <p><b>De:</b> ${email.from}</p>
+            <p><b>Assunto:</b> ${email.subject}</p>
+            <p><b>Corpo:</b> ${email.body || "Sem corpo"}</p>
+          `;
+        });
+        document.getElementById('emails').innerHTML = html;
+      } else {
+        document.getElementById('emails').innerHTML = "<p>Nenhum email ainda.</p>";
+      }
+    }
+  </script>
 
 </body>
 </html>
