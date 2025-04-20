@@ -21,23 +21,35 @@ def handler(request):
     nome = gerar_nome()
     senha = gerar_senha()
 
-    resp = requests.post("https://api.tempmail.lol/v2/inbox/create", headers=headers)
-    if not resp.ok:
+    try:
+        resp = requests.post("https://api.tempmail.lol/v2/inbox/create", headers=headers)
+        if not resp.ok:
+            return {
+                "statusCode": resp.status_code,
+                "body": json.dumps({
+                    "erro": "Erro ao criar email",
+                    "detalhes": resp.text
+                }),
+                "headers": {"Content-Type": "application/json"}
+            }
+        inbox = resp.json()
+
         return {
-            "statusCode": 500,
-            "body": json.dumps({"erro": "Erro ao criar email"})
+            "statusCode": 200,
+            "body": json.dumps({
+                "usuario": nome,
+                "senha": senha,
+                "email": inbox["address"],
+                "token": inbox["token"]
+            }),
+            "headers": {
+                "Content-Type": "application/json"
+            }
         }
 
-    inbox = resp.json()
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "usuario": nome,
-            "senha": senha,
-            "email": inbox["address"],
-            "token": inbox["token"]
-        }),
-        "headers": {
-            "Content-Type": "application/json"
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"erro": str(e)}),
+            "headers": {"Content-Type": "application/json"}
         }
-    }
