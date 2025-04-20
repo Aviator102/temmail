@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gerador de Conta + Email Temporário</title>
+  <title>Gerador de Conta + Email Temp</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -15,10 +15,11 @@
     h1 {
       text-align: center;
       color: #00bcd4;
+      margin-bottom: 10px;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 750px;
       margin: auto;
       background-color: #2c2c2c;
       padding: 20px;
@@ -30,12 +31,12 @@
       background-color: #00bcd4;
       color: white;
       border: none;
-      padding: 12px 20px;
-      margin: 10px 0;
-      font-size: 16px;
+      padding: 10px 18px;
+      font-size: 15px;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 4px;
       transition: 0.3s;
+      margin-right: 5px;
     }
 
     button:hover {
@@ -46,19 +47,26 @@
       background-color: #3a3a3a;
       padding: 15px;
       border-radius: 8px;
-      margin-top: 20px;
-      white-space: pre-wrap;
+      margin-top: 15px;
+      font-size: 15px;
+    }
+
+    .info p, .emails p {
+      margin: 6px 0;
+    }
+
+    .copy-btn {
+      background-color: #555;
+      font-size: 13px;
+      padding: 4px 8px;
+      margin-left: 6px;
     }
 
     hr {
-      border: 0;
+      border: none;
       height: 1px;
       background-color: #555;
-      margin: 20px 0;
-    }
-
-    p {
-      margin: 5px 0;
+      margin: 15px 0;
     }
   </style>
 </head>
@@ -76,28 +84,41 @@
   <script>
     let token = null;
     let intervaloEmails = null;
-    let emailsRecebidos = [];
+    let emailsRecebidos = new Set();
+
+    function copiarTexto(texto) {
+      navigator.clipboard.writeText(texto);
+      alert("Copiado: " + texto);
+    }
 
     async function gerarConta() {
       const res = await fetch('/gerar_conta');
       const data = await res.json();
-      
+
       if (data.error) {
         document.getElementById('info').innerHTML = `<p>❌ ${data.error}</p>`;
         return;
       }
 
       token = data.token;
-      emailsRecebidos = [];
+      emailsRecebidos.clear(); // limpa lista ao gerar nova conta
 
       document.getElementById('info').innerHTML = `
-        <p><strong>👤 Usuário:</strong> ${data.usuario}</p>
-        <p><strong>🔐 Senha:</strong> ${data.senha}</p>
-        <p><strong>📭 Email:</strong> ${data.email}</p>
+        <p><strong>👤 Usuário:</strong> ${data.usuario}
+          <button class="copy-btn" onclick="copiarTexto('${data.usuario}')">Copiar</button>
+        </p>
+        <p><strong>🔐 Senha:</strong> ${data.senha}
+          <button class="copy-btn" onclick="copiarTexto('${data.senha}')">Copiar</button>
+        </p>
+        <p><strong>📭 Email:</strong> ${data.email}
+          <button class="copy-btn" onclick="copiarTexto('${data.email}')">Copiar</button>
+        </p>
         <p>⏳ Verificando emails automaticamente a cada 10s...</p>
       `;
 
-      verificarEmails();
+      document.getElementById('emails').innerHTML = "";
+
+      verificarEmails(); // verifica imediatamente
       if (intervaloEmails) clearInterval(intervaloEmails);
       intervaloEmails = setInterval(verificarEmails, 10000);
     }
@@ -114,27 +135,25 @@
         return;
       }
 
-      if (!data.emails || data.emails.length === 0) {
-        document.getElementById('emails').innerHTML = "<p>Nenhum email recebido ainda.</p>";
-        return;
-      }
+      if (!data.emails || data.emails.length === 0) return;
 
-      let html = "<h2>📥 Emails Recebidos:</h2>";
+      let html = document.getElementById('emails').innerHTML;
+
       data.emails.forEach(email => {
-        if (!emailsRecebidos.includes(email.date)) {
-          emailsRecebidos.push(email.date);
+        if (!emailsRecebidos.has(email.date)) {
+          emailsRecebidos.add(email.date);
+          html += `
+            <hr>
+            <p><strong>De:</strong> ${email.from}</p>
+            <p><strong>Assunto:</strong> ${email.subject}</p>
+            <p><strong>Mensagem:</strong> ${email.body || 'Sem conteúdo'}</p>
+          `;
         }
-
-        html += `
-          <hr>
-          <p><strong>De:</strong> ${email.from}</p>
-          <p><strong>Assunto:</strong> ${email.subject}</p>
-          <p><strong>Mensagem:</strong> ${email.body || 'Sem conteúdo'}</p>
-        `;
       });
 
       document.getElementById('emails').innerHTML = html;
     }
   </script>
+
 </body>
 </html>
