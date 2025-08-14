@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
 import random
@@ -59,6 +59,3 @@ def gerar_conta():
 def verificar_emails(token):
     data = buscar_emails(token)
     return jsonify(data)
-
-if __name__ == '__main__':
-    app.run(debug=True)
