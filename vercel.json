@@ -7,6 +7,7 @@
   "routes": [
     { "src": "/gerar_conta", "dest": "app.py" },
     { "src": "/verificar_emails/(.*)", "dest": "app.py" },
-    { "src": "/", "dest": "/index.html" }
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
