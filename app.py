@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas as rotas
 
 # ==== CONFIG ====
-API_KEY_TEMPMail = "Bearer tempmail.20250410.suzjrmjnpg2cs2hos95zurlxuawt970oke9z6pf8qd221qpx"
+API_KEY_TEMPMail = "Bearer tempmail.20250814.mhnfmriw94lkwb5d2o46y46u9kv3bsp5cd09dt2mz0d0g8v6"
 BASE_URL = "https://api.tempmail.lol"
 HEADERS = {"Authorization": API_KEY_TEMPMail}
 
