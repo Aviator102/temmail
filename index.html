@@ -146,11 +146,25 @@
       margin: 5px 0;
     }
 
-    .email-body {
-      white-space: pre-wrap; /* Preserva quebras de linha */
-      word-break: break-word; /* Quebra palavras longas */
-      max-height: 200px; /* Altura máxima para o corpo do e-mail */
-      overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+    .email-body-html, .email-body-plaintext {
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+    .switch-btn {
+      background-color: #555;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -169,6 +183,7 @@
     let token = null;
     let intervaloEmails = null;
     let emailsRecebidos = new Set();
+    let emailDataStore = {};
 
     function copiarTexto(texto) {
       navigator.clipboard.writeText(texto);
@@ -195,6 +210,7 @@
 
       token = data.token;
       emailsRecebidos.clear();
+      emailDataStore = {};
 
       const senhaGerada = gerarSenhaAleatoria();
 
@@ -230,6 +246,22 @@
       document.getElementById('senha-display').textContent = novaSenha;
     }
 
+    function toggleView(id) {
+        const htmlView = document.getElementById(`html-view-${id}`);
+        const plaintextView = document.getElementById(`plaintext-view-${id}`);
+        const switchBtn = document.getElementById(`switch-btn-${id}`);
+
+        if (htmlView.classList.contains('hidden')) {
+            htmlView.classList.remove('hidden');
+            plaintextView.classList.add('hidden');
+            switchBtn.textContent = 'Switch to Plaintext';
+        } else {
+            htmlView.classList.add('hidden');
+            plaintextView.classList.remove('hidden');
+            switchBtn.textContent = 'Switch to HTML';
+        }
+    }
+
     async function verificarEmails() {
       if (!token) return;
 
@@ -242,22 +274,25 @@
           return;
       }
 
-      const emailsContainer = document.getElementById('emails');
-      emailsContainer.innerHTML = ''; // Limpa os e-mails anteriores para evitar duplicação
+      if (!data.emails || data.emails.length === 0) return;
 
-      if (!data.emails || data.emails.length === 0) {
-          emailsContainer.innerHTML = "<p>Aguardando emails...</p>";
-          return;
-      }
+      const emailsContainer = document.getElementById('emails');
+      
+      const newEmails = data.emails.filter(email => !emailsRecebidos.has(email.id));
+      
+      if (newEmails.length === 0) return;
 
       const emailList = document.createElement('div');
       emailList.className = 'email-list';
 
-      data.emails.forEach(email => {
+      newEmails.forEach(email => {
+          emailsRecebidos.add(email.id);
           const emailItem = document.createElement('div');
           emailItem.className = 'email-item';
 
-          const corpoMensagem = email.body || "[email has empty or invalid body]";
+          const plaintextBody = email.body || "Este e-mail não contém corpo em texto simples.";
+          const htmlBody = email.html || "Este e-mail não contém corpo em HTML.";
+          const hasHtml = !!email.html;
 
           emailItem.innerHTML = `
               <div class="email-header">
@@ -265,14 +300,16 @@
                   <span class="email-date">${new Date(email.date).toLocaleString()}</span>
               </div>
               <div class="email-subject">Assunto: ${email.subject}</div>
-              <div class="email-body">
-                  ${corpoMensagem === "[email has empty or invalid body]" ? email.html || "Este e-mail não contém corpo visível ou está vazio." : corpoMensagem}
+              <div id="html-view-${email.id}" class="email-body-html ${!hasHtml ? 'hidden' : ''}">
+                  ${htmlBody}
               </div>
+              <div id="plaintext-view-${email.id}" class="email-body-plaintext ${hasHtml ? 'hidden' : ''}">
+                  ${plaintextBody}
+              </div>
+              ${hasHtml ? `<button class="switch-btn" id="switch-btn-${email.id}" onclick="toggleView('${email.id}')">Switch to Plaintext</button>` : ''}
           `;
-          emailList.appendChild(emailItem);
+          emailsContainer.prepend(emailItem); // Adiciona o e-mail no topo da lista
       });
-
-      emailsContainer.appendChild(emailList);
     }
   </script>
 
