@@ -106,6 +106,52 @@
         margin-top: 6px;
       }
     }
+
+    /* Novos estilos para os e-mails */
+    .email-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px; /* Espaço entre os e-mails */
+    }
+
+    .email-item {
+      background-color: #3a3a3a;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .email-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #555;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+
+    .email-from {
+      font-weight: bold;
+      color: #e0e0e0;
+    }
+
+    .email-date {
+      font-size: 0.9em;
+      color: #a0a0a0;
+    }
+
+    .email-subject {
+      font-size: 1.1em;
+      font-weight: bold;
+      color: #00bcd4;
+      margin: 5px 0;
+    }
+
+    .email-body {
+      white-space: pre-wrap; /* Preserva quebras de linha */
+      word-break: break-word; /* Quebra palavras longas */
+      max-height: 200px; /* Altura máxima para o corpo do e-mail */
+      overflow-y: auto; /* Adiciona scroll se o conteúdo for muito grande */
+    }
   </style>
 </head>
 <body>
@@ -191,36 +237,42 @@
       const data = await res.json();
 
       if (data.expired) {
-        document.getElementById('emails').innerHTML = "<p>☠️ Caixa de entrada expirada.</p>";
-        clearInterval(intervaloEmails);
-        return;
+          document.getElementById('emails').innerHTML = "<p>☠️ Caixa de entrada expirada.</p>";
+          clearInterval(intervaloEmails);
+          return;
       }
 
-      if (!data.emails || data.emails.length === 0) return;
+      const emailsContainer = document.getElementById('emails');
+      emailsContainer.innerHTML = ''; // Limpa os e-mails anteriores para evitar duplicação
 
-      let html = document.getElementById('emails').innerHTML;
+      if (!data.emails || data.emails.length === 0) {
+          emailsContainer.innerHTML = "<p>Aguardando emails...</p>";
+          return;
+      }
+
+      const emailList = document.createElement('div');
+      emailList.className = 'email-list';
 
       data.emails.forEach(email => {
-        if (!emailsRecebidos.has(email.date)) {
-          emailsRecebidos.add(email.date);
-          let corpoMensagem = email.body || "[email has empty or invalid body]";
+          const emailItem = document.createElement('div');
+          emailItem.className = 'email-item';
 
-          if (corpoMensagem === "[email has empty or invalid body]" && email.html) {
-            corpoMensagem = "Este e-mail não contém corpo em texto simples, mas possui conteúdo em HTML:<br><br>" + email.html;
-          } else if (corpoMensagem === "[email has empty or invalid body]") {
-            corpoMensagem = "Este e-mail não contém corpo visível ou está vazio.";
-          }
+          const corpoMensagem = email.body || "[email has empty or invalid body]";
 
-          html += `
-            <hr>
-            <p><strong>De:</strong> ${email.from}</p>
-            <p><strong>Assunto:</strong> ${email.subject}</p>
-            <p><strong>Mensagem:</strong> ${corpoMensagem}</p>
+          emailItem.innerHTML = `
+              <div class="email-header">
+                  <span class="email-from">De: ${email.from}</span>
+                  <span class="email-date">${new Date(email.date).toLocaleString()}</span>
+              </div>
+              <div class="email-subject">Assunto: ${email.subject}</div>
+              <div class="email-body">
+                  ${corpoMensagem === "[email has empty or invalid body]" ? email.html || "Este e-mail não contém corpo visível ou está vazio." : corpoMensagem}
+              </div>
           `;
-        }
+          emailList.appendChild(emailItem);
       });
 
-      document.getElementById('emails').innerHTML = html;
+      emailsContainer.appendChild(emailList);
     }
   </script>
 
