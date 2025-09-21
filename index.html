@@ -107,11 +107,11 @@
       }
     }
 
-    /* Novos estilos para os e-mails */
+    /* Estilos para os e-mails */
     .email-list {
       display: flex;
       flex-direction: column;
-      gap: 10px; /* Espaço entre os e-mails */
+      gap: 10px;
     }
 
     .email-item {
@@ -151,11 +151,15 @@
       word-break: break-word;
       max-height: 200px;
       overflow-y: auto;
+      padding: 10px;
+      border-radius: 6px;
+      background: #2a2a2a;
     }
 
     .hidden {
       display: none;
     }
+
     .switch-btn {
       background-color: #555;
       color: white;
@@ -165,6 +169,17 @@
       cursor: pointer;
       border-radius: 4px;
       margin-top: 10px;
+    }
+
+    /* 🔹 Correção de contraste para emails recebidos */
+    .email-body-html, 
+    .email-body-plaintext {
+      color: #e0e0e0 !important;
+    }
+
+    .email-body-html * {
+      color: #e0e0e0 !important;
+      background: transparent !important;
     }
   </style>
 </head>
@@ -308,7 +323,7 @@
               </div>
               ${hasHtml ? `<button class="switch-btn" id="switch-btn-${email.id}" onclick="toggleView('${email.id}')">Switch to Plaintext</button>` : ''}
           `;
-          emailsContainer.prepend(emailItem); // Adiciona o e-mail no topo da lista
+          emailsContainer.prepend(emailItem);
       });
     }
   </script>
